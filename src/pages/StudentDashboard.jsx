@@ -67,8 +67,8 @@ function ReportCard({ student, results, term, session, profile }) {
     : null;
   const classSize = termResults[0]?.class_size || null;
 
-  const studentName = profile?.studentInfo?.name || profile?.parentInfo?.name || student?.name || 'N/A';
-  const studentClass = profile?.studentInfo?.class || termResults[0]?.class || 'N/A';
+  const studentName = student?.name || 'N/A';
+  const studentClass = student?.class || 'N/A';
 
   // Split session_id to extract academic year
   const sessionId = termResults[0]?.session_id || '';
@@ -479,15 +479,33 @@ export default function StudentDashboard() {
               {/* Overview Panel */}
               {activePanel === 'overview' && (
                 <div>
-                  <div className="mb-8">
-                    <h2 className="text-xl sm:text-2xl font-black text-[#001F54]">
-                      {isParent ? `${profile?.parentInfo?.name}'s Portal` : `Welcome, ${profile?.studentInfo?.name?.split(' ')[0] || 'Student'}`}
-                    </h2>
-                    <p className="text-slate-400 mt-1 text-sm">
-                      {isParent
-                        ? `Monitor your child's academic performance at ${SCHOOL_NAME}.`
-                        : `Track your academic performance at ${SCHOOL_NAME}.`}
-                    </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                      <h2 className="text-xl sm:text-2xl font-black text-[#001F54]">
+                        {isParent ? `${profile?.parentInfo?.name}'s Portal` : `Welcome, ${profile?.studentInfo?.name?.split(' ')[0] || 'Student'}`}
+                      </h2>
+                      <p className="text-slate-400 mt-1 text-sm">
+                        {isParent
+                          ? `Monitor academic performance for ${profile?.children?.find(c => c.studentID === selectedChildID)?.name || 'your child'} at ${SCHOOL_NAME}.`
+                          : `Track your academic performance at ${SCHOOL_NAME}.`}
+                      </p>
+                    </div>
+                    {isParent && profile?.children && profile.children.length > 1 && (
+                      <div className="relative self-start sm:self-auto">
+                        <select
+                          value={selectedChildID || ''}
+                          onChange={e => setSelectedChildID(parseInt(e.target.value))}
+                          className="appearance-none border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white font-medium text-slate-600"
+                        >
+                          {profile.children.map(child => (
+                            <option key={child.studentID} value={child.studentID}>
+                              {child.name} ({child.class})
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -532,6 +550,22 @@ export default function StudentDashboard() {
                     </div>
 
                     <div className="flex items-center gap-3 self-start sm:self-auto">
+                      {isParent && profile?.children && profile.children.length > 1 && (
+                        <div className="relative">
+                          <select
+                            value={selectedChildID || ''}
+                            onChange={e => setSelectedChildID(parseInt(e.target.value))}
+                            className="appearance-none border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white font-medium text-slate-600"
+                          >
+                            {profile.children.map(child => (
+                              <option key={child.studentID} value={child.studentID}>
+                                {child.name} ({child.class})
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        </div>
+                      )}
                       <div className="relative">
                         <select value={selectedTerm} onChange={e => setSelectedTerm(e.target.value)}
                           className="appearance-none border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white font-medium text-slate-600">
@@ -574,9 +608,31 @@ export default function StudentDashboard() {
               {/* Performance Panel */}
               {activePanel === 'performance' && (
                 <div>
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-black text-[#001F54]">Performance</h2>
-                    <p className="text-slate-400 text-sm mt-1">Visual breakdown of your academic progress by subject</p>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                    <div>
+                      <h2 className="text-2xl font-black text-[#001F54]">Performance</h2>
+                      <p className="text-slate-400 text-sm mt-1">
+                        {isParent 
+                          ? `Visual breakdown of academic progress for ${profile?.children?.find(c => c.studentID === selectedChildID)?.name || 'your child'} by subject` 
+                          : "Visual breakdown of your academic progress by subject"}
+                      </p>
+                    </div>
+                    {isParent && profile?.children && profile.children.length > 1 && (
+                      <div className="relative self-start sm:self-auto">
+                        <select
+                          value={selectedChildID || ''}
+                          onChange={e => setSelectedChildID(parseInt(e.target.value))}
+                          className="appearance-none border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white font-medium text-slate-600"
+                        >
+                          {profile.children.map(child => (
+                            <option key={child.studentID} value={child.studentID}>
+                              {child.name} ({child.class})
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      </div>
+                    )}
                   </div>
 
                   {filtered.length === 0 ? (
