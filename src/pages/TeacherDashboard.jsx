@@ -36,8 +36,8 @@ export default function TeacherDashboard() {
   const [selectedSession, setSelectedSession] = useState('2025/2026');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 1024);
   const [activePanel, setActivePanel] = useState('overview');
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState(null); // null | 'pending' | 'approved'
@@ -90,7 +90,7 @@ export default function TeacherDashboard() {
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
       if (mobile) setSidebarOpen(false);
       else setSidebarOpen(true);
@@ -566,7 +566,7 @@ export default function TeacherDashboard() {
                     ) : (
                       <>
                         <div className="overflow-x-auto">
-                          <table className="w-full min-w-[600px] text-sm">
+                          <table className="w-full min-w-[800px] text-sm">
                             <thead>
                               <tr className="bg-gradient-to-r from-[#001F54] to-[#007BFF]">
                                 {['#', 'Student Name', 'CA (/40)', 'Exam (/60)', 'Total', 'Grade', 'Remark / Custom Remark'].map(h => (
@@ -579,37 +579,37 @@ export default function TeacherDashboard() {
                                 const sc = scores[s.studentID] || { ca_score: 0, exam_score: 0, total: 0, grade: '', remark: '' };
                                 return (
                                   <tr key={s.studentID} className="hover:bg-blue-50/30 transition-colors">
-                                    <td className="px-5 py-3.5 text-slate-400 font-medium text-sm">{i + 1}</td>
-                                    <td className="px-5 py-3.5">
+                                    <td className="px-5 py-3.5 text-slate-400 font-medium text-sm whitespace-nowrap">{i + 1}</td>
+                                    <td className="px-5 py-3.5 whitespace-nowrap">
                                       <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#007BFF] to-[#001F54] flex items-center justify-center text-white font-bold text-xs">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#007BFF] to-[#001F54] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                                           {s.studentName?.[0]?.toUpperCase() || '?'}
                                         </div>
-                                        <span className="font-semibold text-slate-800 text-sm">{s.studentName}</span>
+                                        <span className="font-semibold text-slate-800 text-sm whitespace-nowrap">{s.studentName}</span>
                                       </div>
                                     </td>
-                                    <td className="px-5 py-3.5">
+                                    <td className="px-5 py-3.5 whitespace-nowrap">
                                       <input type="number" min="0" max="40" placeholder="0–40"
                                         value={sc.ca_score || ''}
                                         onChange={e => handleScoreChange(s.studentID, 'ca_score', e.target.value)}
                                         className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent"
                                       />
                                     </td>
-                                    <td className="px-5 py-3.5">
+                                    <td className="px-5 py-3.5 whitespace-nowrap">
                                       <input type="number" min="0" max="60" placeholder="0–60"
                                         value={sc.exam_score || ''}
                                         onChange={e => handleScoreChange(s.studentID, 'exam_score', e.target.value)}
                                         className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent"
                                       />
                                     </td>
-                                    <td className="px-5 py-3.5 font-black text-[#001F54] text-base">{sc.total ?? '—'}</td>
-                                    <td className="px-5 py-3.5 font-bold">
+                                    <td className="px-5 py-3.5 font-black text-[#001F54] text-base whitespace-nowrap">{sc.total ?? '—'}</td>
+                                    <td className="px-5 py-3.5 font-bold whitespace-nowrap">
                                       {sc.grade
                                         ? <span className={`px-2.5 py-0.5 rounded-full text-xs ${gradeChipClass(sc.grade)}`}>{sc.grade}</span>
                                         : <span className="text-slate-300 text-xs">—</span>
                                       }
                                     </td>
-                                    <td className="px-5 py-3.5">
+                                    <td className="px-5 py-3.5 whitespace-nowrap">
                                       <input type="text" placeholder="Add remark"
                                         value={sc.remark || ''}
                                         onChange={e => handleScoreChange(s.studentID, 'remark', e.target.value)}
@@ -729,7 +729,7 @@ export default function TeacherDashboard() {
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full min-w-[760px] text-sm">
+                        <table className="w-full min-w-[900px] text-sm">
                           <thead>
                             <tr className="bg-gradient-to-r from-[#001F54] to-[#007BFF] text-white">
                               {['Student Name', 'Class', 'Subject', 'Term / Session', 'CA (/40)', 'Exam (/60)', 'Total', 'Grade', 'Remark', 'Status'].map(h => (
@@ -744,18 +744,18 @@ export default function TeacherDashboard() {
                               const termName = parts[1] || r.term || '—';
                               return (
                                 <tr key={r.resultID || idx} className="hover:bg-blue-50/20 transition-colors">
-                                  <td className="px-5 py-3.5 font-semibold text-slate-800">{r.student_name}</td>
-                                  <td className="px-5 py-3.5 text-slate-500 font-medium">{r.class}</td>
-                                  <td className="px-5 py-3.5 text-slate-800 font-medium">{r.subject_name}</td>
-                                  <td className="px-5 py-3.5 text-slate-500 text-xs">{termName} Term ({sessionYear})</td>
-                                  <td className="px-5 py-3.5 text-slate-600 font-bold">{r.ca_score}</td>
-                                  <td className="px-5 py-3.5 text-slate-600 font-bold">{r.exam_score}</td>
-                                  <td className="px-5 py-3.5 text-[#001F54] font-black">{r.total_score || r.total}</td>
-                                  <td className="px-5 py-3.5">
+                                  <td className="px-5 py-3.5 font-semibold text-slate-800 whitespace-nowrap">{r.student_name}</td>
+                                  <td className="px-5 py-3.5 text-slate-500 font-medium whitespace-nowrap">{r.class}</td>
+                                  <td className="px-5 py-3.5 text-slate-800 font-medium whitespace-nowrap">{r.subject_name}</td>
+                                  <td className="px-5 py-3.5 text-slate-500 text-xs whitespace-nowrap">{termName} Term ({sessionYear})</td>
+                                  <td className="px-5 py-3.5 text-slate-600 font-bold whitespace-nowrap">{r.ca_score}</td>
+                                  <td className="px-5 py-3.5 text-slate-600 font-bold whitespace-nowrap">{r.exam_score}</td>
+                                  <td className="px-5 py-3.5 text-[#001F54] font-black whitespace-nowrap">{r.total_score || r.total}</td>
+                                  <td className="px-5 py-3.5 whitespace-nowrap">
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${gradeChipClass(r.grade)}`}>{r.grade}</span>
                                   </td>
-                                  <td className="px-5 py-3.5 text-slate-500 italic max-w-[200px] truncate" title={r.remark}>{r.remark || '—'}</td>
-                                  <td className="px-5 py-3.5">
+                                  <td className="px-5 py-3.5 text-slate-500 italic max-w-[200px] truncate whitespace-nowrap" title={r.remark}>{r.remark || '—'}</td>
+                                  <td className="px-5 py-3.5 whitespace-nowrap">
                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                                       r.status === 'approved' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-amber-50 border border-amber-200 text-amber-700'
                                     }`}>

@@ -418,30 +418,30 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
 
     return (
       <tr key={u.id || u.userID || i} className="hover:bg-slate-50/60 transition-colors">
-        <td className="px-5 py-3.5 text-sm font-semibold text-slate-400">{i + 1}</td>
-        <td className="px-5 py-3.5 text-sm font-bold text-[#001F54]">{u.name || u.username || '—'}</td>
-        <td className="px-5 py-3.5 text-sm text-slate-500">{u.email || u.username || '—'}</td>
+        <td className="px-5 py-3.5 text-sm font-semibold text-slate-400 whitespace-nowrap">{i + 1}</td>
+        <td className="px-5 py-3.5 text-sm font-bold text-[#001F54] whitespace-nowrap">{u.name || u.username || '—'}</td>
+        <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">{u.email || u.username || '—'}</td>
         
         {role === 'Student' && (
-          <td className="px-5 py-3.5 text-sm font-semibold text-[#007BFF]">{u.class || '—'}</td>
+          <td className="px-5 py-3.5 text-sm font-semibold text-[#007BFF] whitespace-nowrap">{u.class || '—'}</td>
         )}
         
         {role === 'Teacher' && (
           <>
-            <td className="px-5 py-3.5 text-sm text-slate-500 truncate max-w-[150px]" title={u.classes}>{u.classes || '—'}</td>
-            <td className="px-5 py-3.5 text-sm text-slate-500 truncate max-w-[150px]" title={u.subjects}>{u.subjects || '—'}</td>
+            <td className="px-5 py-3.5 text-sm text-slate-500 truncate max-w-[150px] whitespace-nowrap" title={u.classes}>{u.classes || '—'}</td>
+            <td className="px-5 py-3.5 text-sm text-slate-500 truncate max-w-[150px] whitespace-nowrap" title={u.subjects}>{u.subjects || '—'}</td>
           </>
         )}
         
         {role === 'Parent' && (
-          <td className="px-5 py-3.5 text-sm text-slate-500">
+          <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">
             {u.studentID ? (
               students.find(s => s.studentID === u.studentID)?.name || `ID: ${u.studentID}`
             ) : '—'}
           </td>
         )}
         
-        <td className="px-5 py-3.5 text-sm text-slate-400">{formatDate(u.created_at || u.createdAt)}</td>
+        <td className="px-5 py-3.5 text-sm text-slate-400 whitespace-nowrap">{formatDate(u.created_at || u.createdAt)}</td>
         
         <td className="px-5 py-3.5 text-right text-sm whitespace-nowrap">
           <div className="flex items-center justify-end gap-2">
@@ -517,7 +517,7 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px]">
+            <table className="w-full min-w-[850px]">
               <thead>{renderHead()}</thead>
               <tbody className="divide-y divide-slate-50">
                 {users.map((u, i) => renderRow(u, i))}
@@ -1227,29 +1227,29 @@ function ApprovalPanel() {
                     </button>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full min-w-[400px] text-xs">
+                    <table className="w-full min-w-[650px] text-xs">
                       <thead>
                         <tr className="bg-slate-50">
                           {['Student', 'CA', 'Exam', 'Total', 'Grade', 'Remark'].map(h => (
-                            <th key={h} className="text-left px-3 py-2 text-slate-400 font-bold uppercase tracking-wider">{h}</th>
+                            <th key={h} className="text-left px-3 py-2 text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap">{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {group.rows.map((r, i) => (
                           <tr key={i} className="hover:bg-slate-50/40">
-                            <td className="px-3 py-2 font-semibold text-slate-800">{r.student_name}</td>
-                            <td className="px-3 py-2 text-slate-500">{r.ca_score}</td>
-                            <td className="px-3 py-2 text-slate-500">{r.exam_score}</td>
-                            <td className="px-3 py-2 font-bold text-[#001F54]">{r.total_score}</td>
-                            <td className="px-3 py-2">
+                            <td className="px-3 py-2 font-semibold text-slate-800 whitespace-nowrap">{r.student_name}</td>
+                            <td className="px-3 py-2 text-slate-500 whitespace-nowrap">{r.ca_score}</td>
+                            <td className="px-3 py-2 text-slate-500 whitespace-nowrap">{r.exam_score}</td>
+                            <td className="px-3 py-2 font-bold text-[#001F54] whitespace-nowrap">{r.total_score}</td>
+                            <td className="px-3 py-2 whitespace-nowrap">
                               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                 r.grade === 'A1' ? 'bg-emerald-100 text-emerald-700' :
                                 ['B2','B3'].includes(r.grade) ? 'bg-blue-100 text-blue-700' :
                                 ['C4','C5','C6'].includes(r.grade) ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
                               }`}>{r.grade}</span>
                             </td>
-                            <td className="px-3 py-2 text-slate-500">{r.remark}</td>
+                            <td className="px-3 py-2 text-slate-500 whitespace-nowrap">{r.remark}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -1334,7 +1334,7 @@ function ResultsPanel() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-sm">
+            <table className="w-full min-w-[900px] text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
                   {['Student', 'Class', 'Subject', 'CA', 'Exam', 'Total', 'Grade', 'Remark', 'Status', 'Actions'].map(h => (
@@ -1345,26 +1345,26 @@ function ResultsPanel() {
               <tbody className="divide-y divide-slate-50">
                 {results.map((r, i) => (
                   <tr key={r.resultID || i} className="hover:bg-slate-50/40">
-                    <td className="px-4 py-3 font-semibold text-slate-800">{r.student_name}</td>
-                    <td className="px-4 py-3 text-slate-500">{r.class}</td>
-                    <td className="px-4 py-3 text-slate-500">{r.subject_name}</td>
-                    <td className="px-4 py-3 text-slate-500">{r.ca_score}</td>
-                    <td className="px-4 py-3 text-slate-500">{r.exam_score}</td>
-                    <td className="px-4 py-3 font-bold text-[#001F54]">{r.total_score || r.total}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 font-semibold text-slate-800 whitespace-nowrap">{r.student_name}</td>
+                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{r.class}</td>
+                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{r.subject_name}</td>
+                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{r.ca_score}</td>
+                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{r.exam_score}</td>
+                    <td className="px-4 py-3 font-bold text-[#001F54] whitespace-nowrap">{r.total_score || r.total}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${gradeClass(r.grade)}`}>
                         {r.grade}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-500">{r.remark}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{r.remark}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                         r.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {r.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {r.status === 'approved' ? (
                         <button
                           onClick={() => handleAllowReupload(r)}
@@ -1770,8 +1770,8 @@ function SettingsPanel({ user, onUserUpdate, onLogout }) {
 /* ─── Admin Dashboard (Root) ─────────────────────────── */
 export default function AdminDashboard() {
   const [active, setActive] = useState('overview');
-  const [collapsed, setCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth < 1024);
   const [stats, setStats] = useState({});
   const navigate = useNavigate();
 
@@ -1784,7 +1784,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
       if (mobile) setCollapsed(true); // always hide sidebar on mobile
     };

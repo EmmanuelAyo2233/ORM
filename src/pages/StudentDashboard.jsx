@@ -210,8 +210,8 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedTerm, setSelectedTerm] = useState('All');
   const [activePanel, setActivePanel] = useState('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 1024);
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
 
@@ -233,7 +233,7 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
       if (mobile) setSidebarOpen(false);
       else setSidebarOpen(true);
