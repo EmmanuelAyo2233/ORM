@@ -442,8 +442,7 @@ export default function StudentDashboard() {
                 <p className="text-[#001F54] font-bold text-base md:text-lg">{NAV.find(n => n.id === activePanel)?.label}</p>
                 <p className="text-slate-400 text-xs hidden sm:block">{SCHOOL_NAME} — {isParent ? 'Parent' : 'Student'} Dashboard</p>
               </div>
-              {/* Child selector for parents with multiple children */}
-              {isParent && profile?.children && profile.children.length > 1 && (
+              {isParent && profile?.children && profile.children.length >= 1 && (
                 <div className="ml-3">
                   <select
                     value={selectedChildID || ''}
@@ -490,7 +489,7 @@ export default function StudentDashboard() {
                           : `Track your academic performance at ${SCHOOL_NAME}.`}
                       </p>
                     </div>
-                    {isParent && profile?.children && profile.children.length > 1 && (
+                    {isParent && profile?.children && profile.children.length >= 1 && (
                       <div className="relative self-start sm:self-auto">
                         <select
                           value={selectedChildID || ''}
@@ -550,7 +549,7 @@ export default function StudentDashboard() {
                     </div>
 
                     <div className="flex items-center gap-3 self-start sm:self-auto">
-                      {isParent && profile?.children && profile.children.length > 1 && (
+                      {isParent && profile?.children && profile.children.length >= 1 && (
                         <div className="relative">
                           <select
                             value={selectedChildID || ''}
@@ -617,7 +616,7 @@ export default function StudentDashboard() {
                           : "Visual breakdown of your academic progress by subject"}
                       </p>
                     </div>
-                    {isParent && profile?.children && profile.children.length > 1 && (
+                    {isParent && profile?.children && profile.children.length >= 1 && (
                       <div className="relative self-start sm:self-auto">
                         <select
                           value={selectedChildID || ''}
