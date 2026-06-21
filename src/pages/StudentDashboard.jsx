@@ -76,7 +76,8 @@ function ReportCard({ student, results, term, session, profile }) {
   const displayTerm = term === 'All' ? 'All Terms' : `${term} Term`;
 
   return (
-    <div id="report-card-print" className="bg-white font-serif" style={{ maxWidth: 760, margin: '0 auto', padding: '32px', border: '2px solid #001F54', borderRadius: 8 }}>
+    <div className="overflow-x-auto">
+    <div id="report-card-print" className="bg-white font-serif" style={{ maxWidth: 760, margin: '0 auto', padding: '32px', border: '2px solid #001F54', borderRadius: 8, minWidth: 600 }}>
 
       {/* School Header */}
       <div style={{ borderBottom: '3px double #001F54', paddingBottom: 16, marginBottom: 16, textAlign: 'center' }}>
@@ -198,6 +199,7 @@ function ReportCard({ student, results, term, session, profile }) {
         <span><strong>Next Term Begins:</strong> ___________________________</span>
         <span style={{ color: '#001F54', fontWeight: 700 }}>{SCHOOL_NAME} — Official Academic Report</span>
       </div>
+    </div>
     </div>
   );
 }
@@ -429,7 +431,7 @@ export default function StudentDashboard() {
               {activePanel === 'overview' && (
                 <div>
                   <div className="mb-8">
-                    <h2 className="text-2xl font-black text-[#001F54]">
+                    <h2 className="text-xl sm:text-2xl font-black text-[#001F54]">
                       {isParent ? `${profile?.parentInfo?.name}'s Portal` : `Welcome, ${profile?.studentInfo?.name?.split(' ')[0] || 'Student'}`}
                     </h2>
                     <p className="text-slate-400 mt-1 text-sm">
@@ -474,13 +476,13 @@ export default function StudentDashboard() {
               {/* Result Card Panel */}
               {activePanel === 'results' && (
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
-                      <h2 className="text-2xl font-black text-[#001F54]">Result Card</h2>
+                      <h2 className="text-xl sm:text-2xl font-black text-[#001F54]">Result Card</h2>
                       <p className="text-slate-400 text-sm mt-1">Official {SCHOOL_NAME} academic report card</p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 self-start sm:self-auto">
                       <div className="relative">
                         <select value={selectedTerm} onChange={e => setSelectedTerm(e.target.value)}
                           className="appearance-none border border-slate-200 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white font-medium text-slate-600">

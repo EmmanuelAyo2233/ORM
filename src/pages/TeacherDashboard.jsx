@@ -429,7 +429,7 @@ export default function TeacherDashboard() {
               {activePanel === 'overview' && (
                 <div>
                   <div className="mb-8">
-                    <h2 className="text-2xl font-black text-[#001F54]">Welcome back, {displayName}!</h2>
+                    <h2 className="text-xl sm:text-2xl font-black text-[#001F54]">Welcome back, {displayName}!</h2>
                     <p className="text-slate-400 mt-1 text-sm">Here is a summary of your assigned classes and academic records.</p>
                   </div>
 
@@ -494,7 +494,7 @@ export default function TeacherDashboard() {
               {activePanel === 'scores' && (
                 <div>
                   <div className="mb-6">
-                    <h2 className="text-2xl font-black text-[#001F54]">Score Entry</h2>
+                    <h2 className="text-xl sm:text-2xl font-black text-[#001F54]">Score Entry</h2>
                     <p className="text-slate-400 text-sm mt-1">Select an assigned class & subject, then enter CA and Exam scores. Grades are processed automatically.</p>
                   </div>
 
@@ -566,7 +566,7 @@ export default function TeacherDashboard() {
                     ) : (
                       <>
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
+                          <table className="w-full min-w-[600px] text-sm">
                             <thead>
                               <tr className="bg-gradient-to-r from-[#001F54] to-[#007BFF]">
                                 {['#', 'Student Name', 'CA (/40)', 'Exam (/60)', 'Total', 'Grade', 'Remark / Custom Remark'].map(h => (
@@ -647,15 +647,15 @@ export default function TeacherDashboard() {
               {/* Submissions History */}
               {activePanel === 'history' && (
                 <div>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
-                      <h2 className="text-2xl font-black text-[#001F54]">Submission History</h2>
+                      <h2 className="text-xl sm:text-2xl font-black text-[#001F54]">Submission History</h2>
                       <p className="text-slate-400 text-sm mt-1">View and search results sheets you have submitted</p>
                     </div>
                     <button 
                       onClick={loadHistory} 
                       disabled={loadingHistory}
-                      className="flex items-center gap-2 border border-slate-200 text-slate-600 font-semibold px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-all text-sm disabled:opacity-60"
+                      className="flex items-center gap-2 border border-slate-200 text-slate-600 font-semibold px-4 py-2.5 rounded-xl hover:bg-slate-50 transition-all text-sm disabled:opacity-60 self-start sm:self-auto"
                     >
                       Refresh List
                     </button>
@@ -729,7 +729,7 @@ export default function TeacherDashboard() {
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                        <table className="w-full min-w-[760px] text-sm">
                           <thead>
                             <tr className="bg-gradient-to-r from-[#001F54] to-[#007BFF] text-white">
                               {['Student Name', 'Class', 'Subject', 'Term / Session', 'CA (/40)', 'Exam (/60)', 'Total', 'Grade', 'Remark', 'Status'].map(h => (

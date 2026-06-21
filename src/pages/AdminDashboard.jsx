@@ -476,9 +476,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-black text-[#001F54] flex items-center gap-2.5">
+          <h2 className="text-xl sm:text-2xl font-black text-[#001F54] flex items-center gap-2.5">
             <RoleIcon size={22} className="text-[#007BFF]" />
             {role}s
           </h2>
@@ -491,7 +491,7 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
             setError('');
             setShowModal(true);
           }}
-          className="flex items-center gap-2 bg-gradient-to-r from-[#007BFF] to-[#001F54] text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-300/30 hover:shadow-blue-300/50 transition-all text-sm"
+          className="flex items-center gap-2 bg-gradient-to-r from-[#007BFF] to-[#001F54] text-white font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-blue-300/30 hover:shadow-blue-300/50 transition-all text-sm self-start sm:self-auto"
         >
           <Plus size={15} /> Add {role}
         </button>
@@ -517,7 +517,7 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[520px]">
               <thead>{renderHead()}</thead>
               <tbody className="divide-y divide-slate-50">
                 {users.map((u, i) => renderRow(u, i))}
@@ -875,14 +875,14 @@ function SubjectsPanel() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-black text-[#001F54] flex items-center gap-2.5">
+          <h2 className="text-xl sm:text-2xl font-black text-[#001F54] flex items-center gap-2.5">
             <BookOpen size={22} className="text-[#007BFF]" /> Subjects
           </h2>
           <p className="text-slate-400 text-sm mt-1">Manage the school subject catalogue</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
           <button onClick={handleSeedDefaults} disabled={seeding}
             className="flex items-center gap-2 border border-[#007BFF] text-[#007BFF] font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-50 transition-all text-sm disabled:opacity-60">
             {seeding ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
@@ -1033,14 +1033,14 @@ function ClassesPanel() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-black text-[#001F54] flex items-center gap-2.5">
+          <h2 className="text-xl sm:text-2xl font-black text-[#001F54] flex items-center gap-2.5">
             <School size={22} className="text-[#007BFF]" /> Classes
           </h2>
           <p className="text-slate-400 text-sm mt-1">Manage school class levels and academic arms</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-start sm:self-auto">
           <button onClick={handleSeedDefaults} disabled={seeding}
             className="flex items-center gap-2 border border-[#007BFF] text-[#007BFF] font-semibold px-4 py-2.5 rounded-xl hover:bg-blue-50 transition-all text-sm disabled:opacity-60">
             {seeding ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
@@ -1210,14 +1210,12 @@ function ApprovalPanel() {
               const [session, term] = group.session_id.split('-');
               return (
                 <div key={gi} className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-lg">{group.class}</span>
-                        <span className="font-bold text-slate-800">{group.subject_name}</span>
-                        <span className="text-slate-400 text-sm">{term} Term — {session}</span>
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">{group.rows.length} student{group.rows.length !== 1 ? 's' : ''}</span>
-                      </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold rounded-lg">{group.class}</span>
+                      <span className="font-bold text-slate-800">{group.subject_name}</span>
+                      <span className="text-slate-400 text-sm">{term} Term — {session}</span>
+                      <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs font-bold rounded-full">{group.rows.length} student{group.rows.length !== 1 ? 's' : ''}</span>
                     </div>
                     <button
                       onClick={() => handleApprove(group)}
@@ -1229,7 +1227,7 @@ function ApprovalPanel() {
                     </button>
                   </div>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
+                    <table className="w-full min-w-[400px] text-xs">
                       <thead>
                         <tr className="bg-slate-50">
                           {['Student', 'CA', 'Exam', 'Total', 'Grade', 'Remark'].map(h => (
@@ -1336,7 +1334,7 @@ function ResultsPanel() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
                   {['Student', 'Class', 'Subject', 'CA', 'Exam', 'Total', 'Grade', 'Remark', 'Status', 'Actions'].map(h => (
