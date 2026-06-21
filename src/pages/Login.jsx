@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle, TrendingUp, BarChart2, AlertCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || 'https://orm-backend-cziu.onrender.com/api';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });

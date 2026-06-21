@@ -11,7 +11,7 @@ import {
   Pencil, ArrowUp, School, X, ShieldCheck, RefreshCw
 } from 'lucide-react';
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || 'https://orm-backend-cziu.onrender.com/api';
 const SCHOOL_NAME = 'Best Foundation Secondary School';
 const SCHOOL_SHORT = 'BFSS';
 
@@ -172,7 +172,7 @@ function OverviewPanel({ stats, onNavigate }) {
           {[
             { Icon: Activity, label: 'Database Connection', sub: 'TiDB Cloud — Connected' },
             { Icon: Lock,     label: 'Authentication',       sub: 'JWT — Active (7-day tokens)' },
-            { Icon: Globe,    label: 'API Server',            sub: 'Port 5000 — Running' },
+            { Icon: Globe,    label: 'API Server',            sub: API.includes('localhost') ? 'Port 5000 — Running' : 'Render Cloud — Running' },
           ].map((s, i) => (
             <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
               <s.Icon size={16} className="text-slate-500 flex-shrink-0" />

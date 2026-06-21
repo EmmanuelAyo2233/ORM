@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { calculateGrade, calculateRemark } from '../utils/gradingEngine';
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || 'https://orm-backend-cziu.onrender.com/api';
 const SCHOOL_NAME = 'Best Foundation Secondary School';
 const SCHOOL_SHORT = 'BFSS';
 
