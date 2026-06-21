@@ -212,7 +212,10 @@ export default function StudentDashboard() {
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
 
-  const user = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } })();
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  });
+  const user = currentUser;
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
   const isParent = user.role === 'Parent';
@@ -343,9 +346,13 @@ export default function StudentDashboard() {
 
         <div className="border-t border-white/10 px-3 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-400 flex items-center justify-center font-black text-white text-sm">
-              {(profile?.studentInfo?.name || profile?.parentInfo?.name || user?.username)?.[0]?.toUpperCase() || 'S'}
-            </div>
+            {currentUser?.avatar ? (
+              <img src={currentUser.avatar} className="w-9 h-9 rounded-xl object-cover flex-shrink-0" alt="Avatar" />
+            ) : (
+              <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-400 flex items-center justify-center font-black text-white text-sm">
+                {(profile?.studentInfo?.name || profile?.parentInfo?.name || currentUser?.username)?.[0]?.toUpperCase() || 'S'}
+              </div>
+            )}
             {sidebarOpen && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
                 <p className="text-white font-semibold text-sm truncate">{displayName}</p>
@@ -374,9 +381,13 @@ export default function StudentDashboard() {
               <p className="text-slate-400 text-xs">{SCHOOL_NAME} — {isParent ? 'Parent' : 'Student'} Dashboard</p>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm">
-                {(profile?.studentInfo?.name || profile?.parentInfo?.name || user?.username)?.[0]?.toUpperCase() || 'S'}
-              </div>
+              {currentUser?.avatar ? (
+                <img src={currentUser.avatar} className="w-8 h-8 rounded-xl object-cover" alt="Avatar" />
+              ) : (
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm">
+                  {(profile?.studentInfo?.name || profile?.parentInfo?.name || currentUser?.username)?.[0]?.toUpperCase() || 'S'}
+                </div>
+              )}
               <span className="text-sm font-semibold text-slate-700 hidden sm:inline">{displayName}</span>
             </div>
           </div>
@@ -529,6 +540,57 @@ export default function StudentDashboard() {
               {/* Settings Panel */}
               {activePanel === 'settings' && (
                 <div className="space-y-6">
+                  {/* Profile Picture Upload */}
+                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                    <div className="flex items-center gap-5">
+                      <div className="relative group w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                        {currentUser?.avatar ? (
+                          <img src={currentUser.avatar} className="w-full h-full object-cover" alt="Profile" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-emerald-400 to-teal-400 text-white text-2xl font-black">
+                            {(profile?.studentInfo?.name || profile?.parentInfo?.name || currentUser?.username)?.[0]?.toUpperCase() || 'S'}
+                          </div>
+                        )}
+                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold cursor-pointer transition-opacity">
+                          Upload Photo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              if (file.size > 2 * 1024 * 1024) {
+                                alert("Image must be smaller than 2MB");
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onloadend = async () => {
+                                const base64String = reader.result;
+                                try {
+                                  const token = localStorage.getItem('token');
+                                  const headers = { Authorization: `Bearer ${token}` };
+                                  await axios.put(`${API}/users/${currentUser.userID}`, { avatar: base64String }, { headers });
+                                  const updated = { ...currentUser, avatar: base64String };
+                                  localStorage.setItem('user', JSON.stringify(updated));
+                                  setCurrentUser(updated);
+                                  alert("Profile picture updated successfully!");
+                                } catch (err) {
+                                  alert("Failed to update profile picture.");
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-[#001F54] text-base">Profile Photo</h3>
+                        <p className="text-slate-400 text-xs mt-0.5">JPG or PNG. Max size 2MB.</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
                     <div className="flex items-center justify-between mb-5">
                       <div>
@@ -583,9 +645,13 @@ export default function StudentDashboard() {
                       <p className="text-slate-400 text-xs mt-0.5">Your portal account details and session management</p>
                     </div>
                     <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#001F54] to-[#007BFF] flex items-center justify-center text-white font-black text-xl">
-                        {(profile?.studentInfo?.name || profile?.parentInfo?.name || user?.username)?.[0]?.toUpperCase() || 'S'}
-                      </div>
+                      {currentUser?.avatar ? (
+                        <img src={currentUser.avatar} className="w-14 h-14 rounded-2xl object-cover flex-shrink-0" alt="Avatar" />
+                      ) : (
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#001F54] to-[#007BFF] flex items-center justify-center text-white font-black text-xl">
+                          {(profile?.studentInfo?.name || profile?.parentInfo?.name || currentUser?.username)?.[0]?.toUpperCase() || 'S'}
+                        </div>
+                      )}
                       <div>
                         <p className="font-bold text-[#001F54] text-base">{displayName}</p>
                         <p className="text-slate-500 text-sm">{user?.username}</p>

@@ -85,9 +85,13 @@ function Sidebar({ active, onSelect, collapsed, onToggle, user, onLogout }) {
       {/* User */}
       <div className="border-t border-white/10 px-3 py-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-tr from-orange-400 to-yellow-400 flex items-center justify-center font-black text-white text-sm">
-            {user?.name?.[0]?.toUpperCase() || 'A'}
-          </div>
+          {user?.avatar ? (
+            <img src={user.avatar} className="w-9 h-9 rounded-xl object-cover flex-shrink-0" alt="Avatar" />
+          ) : (
+            <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-tr from-orange-400 to-yellow-400 flex items-center justify-center font-black text-white text-sm">
+              {user?.name?.[0]?.toUpperCase() || 'A'}
+            </div>
+          )}
           {!collapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
               <p className="text-white font-semibold text-sm truncate">{user?.name || 'Administrator'}</p>
@@ -165,14 +169,14 @@ function OverviewPanel({ stats, onNavigate }) {
         </div>
       </div>
 
-      {/* System Status */}
+      {/* Portal Details */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-        <h3 className="font-bold text-[#001F54] text-base mb-4">System Status</h3>
+        <h3 className="font-bold text-[#001F54] text-base mb-4">Portal Setup</h3>
         <div className="space-y-2">
           {[
-            { Icon: Activity, label: 'Database Connection', sub: 'TiDB Cloud — Connected' },
-            { Icon: Lock,     label: 'Authentication',       sub: 'JWT — Active (7-day tokens)' },
-            { Icon: Globe,    label: 'API Server',            sub: API.includes('localhost') ? 'Port 5000 — Running' : 'Render Cloud — Running' },
+            { Icon: BookOpen,      label: 'Grading Scale',    sub: 'WAEC / NECO Standard (A1–F9)',  status: 'Active' },
+            { Icon: Users,         label: 'Active Portals',   sub: 'Admin, Teacher, Student, Parent', status: 'Enabled' },
+            { Icon: GraduationCap, label: 'Report Sheets',    sub: 'Instant Card Generation & PDF',   status: 'Online' },
           ].map((s, i) => (
             <div key={i} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
               <s.Icon size={16} className="text-slate-500 flex-shrink-0" />
@@ -182,7 +186,7 @@ function OverviewPanel({ stats, onNavigate }) {
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-xs text-green-600 font-medium">Online</span>
+                <span className="text-xs text-green-600 font-medium">{s.status}</span>
               </div>
             </div>
           ))}
@@ -1383,7 +1387,7 @@ function ResultsPanel() {
 }
 
 /* ─── Settings Panel (Real Platform Settings) ─────────── */
-function SettingsPanel({ user, onLogout }) {
+function SettingsPanel({ user, onUserUpdate, onLogout }) {
   const [schoolName, setSchoolName] = useState('Best Foundation Secondary School');
   const [academicYear, setAcademicYear] = useState('2025/2026');
   const [currentTerm, setCurrentTerm] = useState('First');
@@ -1475,6 +1479,57 @@ function SettingsPanel({ user, onLogout }) {
       </div>
 
       <div className="space-y-6">
+
+        {/* Profile Picture Upload */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+          <div className="flex items-center gap-5">
+            <div className="relative group w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+              {user?.avatar ? (
+                <img src={user.avatar} className="w-full h-full object-cover" alt="Profile" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-[#001F54] to-[#007BFF] text-white text-2xl font-black">
+                  {user?.name?.[0]?.toUpperCase() || 'A'}
+                </div>
+              )}
+              <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold cursor-pointer transition-opacity">
+                Upload Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 2 * 1024 * 1024) {
+                      alert("Image must be smaller than 2MB");
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                      const base64String = reader.result;
+                      try {
+                        const token = localStorage.getItem('token');
+                        const headers = { Authorization: `Bearer ${token}` };
+                        await axios.put(`${API}/users/${user.userID}`, { avatar: base64String }, { headers });
+                        const updated = { ...user, avatar: base64String };
+                        localStorage.setItem('user', JSON.stringify(updated));
+                        onUserUpdate(updated);
+                        alert("Profile picture updated successfully!");
+                      } catch (err) {
+                        alert("Failed to update profile picture.");
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <div>
+              <h3 className="font-bold text-[#001F54] text-base">Profile Photo</h3>
+              <p className="text-slate-400 text-xs mt-0.5">JPG or PNG. Max size 2MB.</p>
+            </div>
+          </div>
+        </div>
 
         {/* School Information */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
@@ -1712,7 +1767,10 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({});
   const navigate = useNavigate();
 
-  const user = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } })();
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  });
+  const user = currentUser;
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -1744,7 +1802,7 @@ export default function AdminDashboard() {
       case 'classes':  return <ClassesPanel />;
       case 'approval': return <ApprovalPanel />;
       case 'results':  return <ResultsPanel />;
-      case 'settings': return <SettingsPanel user={user} onLogout={handleLogout} />;
+      case 'settings': return <SettingsPanel user={user} onUserUpdate={setCurrentUser} onLogout={handleLogout} />;
       default:         return <OverviewPanel stats={stats} onNavigate={setActive} />;
     }
   };
@@ -1776,9 +1834,13 @@ export default function AdminDashboard() {
               </div>
               <div className="w-px h-5 bg-slate-200" />
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#001F54] to-[#007BFF] flex items-center justify-center text-white font-bold text-sm">
-                  {user?.name?.[0]?.toUpperCase() || 'A'}
-                </div>
+                {user?.avatar ? (
+                  <img src={user.avatar} className="w-8 h-8 rounded-xl object-cover" alt="Avatar" />
+                ) : (
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#001F54] to-[#007BFF] flex items-center justify-center text-white font-bold text-sm">
+                    {user?.name?.[0]?.toUpperCase() || 'A'}
+                  </div>
+                )}
                 <span className="text-sm font-semibold text-slate-700 hidden sm:inline">{user?.name || 'Admin'}</span>
               </div>
             </div>

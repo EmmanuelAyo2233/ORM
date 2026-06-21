@@ -43,7 +43,10 @@ export default function TeacherDashboard() {
   const [submitMessage, setSubmitMessage] = useState('');
   const navigate = useNavigate();
 
-  const user = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } })();
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  });
+  const user = currentUser;
   const token = localStorage.getItem('token');
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -335,9 +338,13 @@ export default function TeacherDashboard() {
 
         <div className="border-t border-white/10 px-3 py-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-400 flex items-center justify-center font-black text-white text-sm">
-              {displayName[0]?.toUpperCase() || 'T'}
-            </div>
+            {currentUser?.avatar ? (
+              <img src={currentUser.avatar} className="w-9 h-9 rounded-xl object-cover flex-shrink-0" alt="Avatar" />
+            ) : (
+              <div className="w-9 h-9 flex-shrink-0 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-400 flex items-center justify-center font-black text-white text-sm">
+                {displayName[0]?.toUpperCase() || 'T'}
+              </div>
+            )}
             {sidebarOpen && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
                 <p className="text-white font-semibold text-sm truncate">{displayName}</p>
@@ -372,9 +379,13 @@ export default function TeacherDashboard() {
               </motion.div>
             )}
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
-                {displayName[0]?.toUpperCase() || 'T'}
-              </div>
+              {currentUser?.avatar ? (
+                <img src={currentUser.avatar} className="w-8 h-8 rounded-xl object-cover" alt="Avatar" />
+              ) : (
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
+                  {displayName[0]?.toUpperCase() || 'T'}
+                </div>
+              )}
               <span className="text-sm font-semibold text-slate-700 hidden sm:inline">{displayName}</span>
             </div>
           </div>
@@ -737,6 +748,57 @@ export default function TeacherDashboard() {
                 <div>
                   <h2 className="text-2xl font-black text-[#001F54] mb-6">My Profile</h2>
                   <div className="space-y-6">
+                    {/* Profile Picture Upload */}
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                      <div className="flex items-center gap-5">
+                        <div className="relative group w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                          {currentUser?.avatar ? (
+                            <img src={currentUser.avatar} className="w-full h-full object-cover" alt="Profile" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-tr from-amber-400 to-orange-400 text-white text-2xl font-black">
+                              {displayName[0]?.toUpperCase() || 'T'}
+                            </div>
+                          )}
+                          <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold cursor-pointer transition-opacity">
+                            Upload Photo
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if (!file) return;
+                                if (file.size > 2 * 1024 * 1024) {
+                                  alert("Image must be smaller than 2MB");
+                                  return;
+                                }
+                                const reader = new FileReader();
+                                reader.onloadend = async () => {
+                                  const base64String = reader.result;
+                                  try {
+                                    const token = localStorage.getItem('token');
+                                    const headers = { Authorization: `Bearer ${token}` };
+                                    await axios.put(`${API}/users/${currentUser.userID}`, { avatar: base64String }, { headers });
+                                    const updated = { ...currentUser, avatar: base64String };
+                                    localStorage.setItem('user', JSON.stringify(updated));
+                                    setCurrentUser(updated);
+                                    alert("Profile picture updated successfully!");
+                                  } catch (err) {
+                                    alert("Failed to update profile picture.");
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-[#001F54] text-base">Profile Photo</h3>
+                          <p className="text-slate-400 text-xs mt-0.5">JPG or PNG. Max size 2MB.</p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Account Credentials */}
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
                       <div className="flex items-center justify-between mb-5">

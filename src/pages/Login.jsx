@@ -182,14 +182,6 @@ export default function Login() {
             Accounts are created by your School Administrator.
           </p>
 
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700">
-            <p className="font-bold mb-2 text-blue-900">Default Administrator Login</p>
-            <div className="space-y-1">
-              <p>Email: <code className="bg-white px-1.5 py-0.5 rounded font-mono text-slate-700">adminORM@gmail.com</code></p>
-              <p>Password: <code className="bg-white px-1.5 py-0.5 rounded font-mono text-slate-700">password123</code></p>
-            </div>
-          </div>
-
           <Link to="/" className="flex items-center justify-center gap-2 mt-6 text-sm text-[#007BFF] font-semibold hover:text-[#001F54] transition-colors">
             <ArrowLeft size={14} /> Back to Homepage
           </Link>
