@@ -227,9 +227,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
   ]);
 
   // Custom states for multi-child parent links (up to 5 children)
-  const EMPTY_CHILD_LINKS = [{ studentID: '' }, { studentID: '' }, { studentID: '' }, { studentID: '' }, { studentID: '' }];
-  const [parentChildLinks, setParentChildLinks] = useState(EMPTY_CHILD_LINKS);
-  const [editParentChildLinks, setEditParentChildLinks] = useState(EMPTY_CHILD_LINKS);
+  const createEmptyChildLinks = () => [{ studentID: '' }, { studentID: '' }, { studentID: '' }, { studentID: '' }, { studentID: '' }];
+  const [parentChildLinks, setParentChildLinks] = useState(createEmptyChildLinks);
+  const [editParentChildLinks, setEditParentChildLinks] = useState(createEmptyChildLinks);
 
   const [students,     setStudents]     = useState([]);
   const [subjects,     setSubjects]     = useState([]);
@@ -313,7 +313,7 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
       setShowModal(false);
       setForm({ name:'', email:'', password:'', class:'', gender:'', DOB:'', studentID:'', subjectID:'' });
       setTeacherAssignments([{ class: '', subjectID: '' }, { class: '', subjectID: '' }, { class: '', subjectID: '' }]);
-      setParentChildLinks(EMPTY_CHILD_LINKS);
+      setParentChildLinks(createEmptyChildLinks());
       load();
       setTimeout(() => setSuccess(''), 4000);
     } catch (err) { setError(err.response?.data?.error || err.response?.data?.message || 'Failed to create account.'); }
@@ -380,7 +380,7 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
       const populated = [0,1,2,3,4].map(i => ({ studentID: existingIDs[i] ? String(existingIDs[i]) : '' }));
       setEditParentChildLinks(populated);
     } else {
-      setEditParentChildLinks(EMPTY_CHILD_LINKS);
+      setEditParentChildLinks(createEmptyChildLinks());
     }
   };
 
@@ -648,9 +648,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                           <select 
                             value={ass.class} 
                             onChange={e => {
-                              const updated = [...teacherAssignments];
-                              updated[index].class = e.target.value;
-                              setTeacherAssignments(updated);
+                              setTeacherAssignments(prev => prev.map((item, i) => 
+                                i === index ? { ...item, class: e.target.value } : item
+                              ));
                             }}
                             required={index === 0}
                             className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
@@ -664,9 +664,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                           <select 
                             value={ass.subjectID} 
                             onChange={e => {
-                              const updated = [...teacherAssignments];
-                              updated[index].subjectID = e.target.value;
-                              setTeacherAssignments(updated);
+                              setTeacherAssignments(prev => prev.map((item, i) => 
+                                i === index ? { ...item, subjectID: e.target.value } : item
+                              ));
                             }}
                             required={index === 0}
                             className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
@@ -693,9 +693,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                         <select
                           value={link.studentID}
                           onChange={e => {
-                            const updated = [...parentChildLinks];
-                            updated[index].studentID = e.target.value;
-                            setParentChildLinks(updated);
+                            setParentChildLinks(prev => prev.map((item, i) => 
+                              i === index ? { ...item, studentID: e.target.value } : item
+                            ));
                           }}
                           required={index === 0}
                           className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
@@ -804,9 +804,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                           <select 
                             value={ass.class} 
                             onChange={e => {
-                              const updated = [...editTeacherAssignments];
-                              updated[index].class = e.target.value;
-                              setEditTeacherAssignments(updated);
+                              setEditTeacherAssignments(prev => prev.map((item, i) => 
+                                i === index ? { ...item, class: e.target.value } : item
+                              ));
                             }}
                             required={index === 0}
                             className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
@@ -820,9 +820,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                           <select 
                             value={ass.subjectID} 
                             onChange={e => {
-                              const updated = [...editTeacherAssignments];
-                              updated[index].subjectID = e.target.value;
-                              setEditTeacherAssignments(updated);
+                              setEditTeacherAssignments(prev => prev.map((item, i) => 
+                                i === index ? { ...item, subjectID: e.target.value } : item
+                              ));
                             }}
                             required={index === 0}
                             className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
@@ -849,9 +849,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                         <select
                           value={link.studentID}
                           onChange={e => {
-                            const updated = [...editParentChildLinks];
-                            updated[index].studentID = e.target.value;
-                            setEditParentChildLinks(updated);
+                            setEditParentChildLinks(prev => prev.map((item, i) => 
+                              i === index ? { ...item, studentID: e.target.value } : item
+                            ));
                           }}
                           required={index === 0}
                           className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
