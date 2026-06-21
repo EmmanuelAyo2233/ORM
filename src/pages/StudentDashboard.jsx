@@ -5,7 +5,7 @@ import axios from 'axios';
 import {
   FileText, BarChart2, TrendingUp, Award, LogOut,
   Printer, Loader2, ChevronDown, LayoutDashboard, Settings,
-  ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Save
+  ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Save, Menu, X
 } from 'lucide-react';
 
 const API = import.meta.env.VITE_API_URL || 'https://orm-backend-cziu.onrender.com/api';
@@ -208,7 +208,8 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedTerm, setSelectedTerm] = useState('All');
   const [activePanel, setActivePanel] = useState('overview');
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
 
@@ -227,6 +228,18 @@ export default function StudentDashboard() {
   const [credError, setCredError] = useState('');
   const [credSuccess, setCredSuccess] = useState('');
   const [updatingCreds, setUpdatingCreds] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarOpen(false);
+      else setSidebarOpen(true);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const loadResultsAndProfile = async () => {
@@ -302,15 +315,20 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
 
-      {/* ── Sidebar ───────────────────────────────────── */}
+      {/* Mobile backdrop */}
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* ── Sidebar ─────────────────────────────────────────── */}
       <motion.aside
-        animate={{ width: sidebarOpen ? 240 : 68 }}
+        animate={{ width: isMobile ? (sidebarOpen ? 260 : 0) : (sidebarOpen ? 240 : 68) }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
         className="fixed left-0 top-0 h-full flex flex-col z-40 overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #001F54 0%, #003399 60%, #007BFF 100%)' }}
       >
         <div className="flex items-center px-4 py-5 border-b border-white/10 min-h-[72px]">
-          {!sidebarOpen ? (
+          {!sidebarOpen && !isMobile ? (
             <button onClick={() => setSidebarOpen(p => !p)} className="w-full flex items-center justify-center text-white/50 hover:text-white transition-colors">
               <ChevronRight size={18} />
             </button>
@@ -323,8 +341,8 @@ export default function StudentDashboard() {
                 <p className="text-white font-black text-[11px] leading-tight truncate">{SCHOOL_NAME}</p>
                 <p className="text-blue-300 text-[10px] tracking-widest">{isParent ? 'Parent' : 'Student'} Portal</p>
               </div>
-              <button onClick={() => setSidebarOpen(p => !p)} className="text-white/50 hover:text-white transition-colors flex-shrink-0">
-                <ChevronLeft size={16} />
+              <button onClick={() => setSidebarOpen(false)} className="text-white/50 hover:text-white transition-colors flex-shrink-0">
+                {isMobile ? <X size={16} /> : <ChevronLeft size={16} />}
               </button>
             </div>
           )}
@@ -332,14 +350,14 @@ export default function StudentDashboard() {
 
         <nav className="flex-1 py-4 px-2 space-y-0.5">
           {NAV.map(item => (
-            <button key={item.id} onClick={() => setActivePanel(item.id)} title={!sidebarOpen ? item.label : ''}
+            <button key={item.id} onClick={() => { setActivePanel(item.id); if (isMobile) setSidebarOpen(false); }} title={!sidebarOpen && !isMobile ? item.label : ''}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
                 activePanel === item.id
                   ? 'bg-white text-[#001F54] font-bold shadow-lg'
                   : 'text-blue-100 hover:bg-white/10 hover:text-white'
               }`}>
               <item.Icon size={18} className="flex-shrink-0" />
-              {sidebarOpen && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-semibold truncate">{item.label}</motion.span>}
+              {(sidebarOpen || isMobile) && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-semibold truncate">{item.label}</motion.span>}
             </button>
           ))}
         </nav>
@@ -353,13 +371,13 @@ export default function StudentDashboard() {
                 {(profile?.studentInfo?.name || profile?.parentInfo?.name || currentUser?.username)?.[0]?.toUpperCase() || 'S'}
               </div>
             )}
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
                 <p className="text-white font-semibold text-sm truncate">{displayName}</p>
                 <p className="text-blue-300 text-[10px]">{user.role}</p>
               </motion.div>
             )}
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <button onClick={handleLogout} className="text-blue-300 hover:text-red-400 transition-colors flex-shrink-0">
                 <LogOut size={15} />
               </button>
@@ -368,17 +386,27 @@ export default function StudentDashboard() {
         </div>
       </motion.aside>
 
-      {/* ── Main Content ───────────────────────────────── */}
+      {/* ── Main Content ─────────────────────────────────────── */}
       <motion.main
-        animate={{ marginLeft: sidebarOpen ? 240 : 68 }}
+        animate={{ marginLeft: isMobile ? 0 : (sidebarOpen ? 240 : 68) }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
         className="flex-1 min-h-screen flex flex-col"
       >
         <header className="sticky top-0 z-30 bg-white border-b border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between px-8 py-4">
-            <div>
-              <p className="text-[#001F54] font-bold text-lg">{NAV.find(n => n.id === activePanel)?.label}</p>
-              <p className="text-slate-400 text-xs">{SCHOOL_NAME} — {isParent ? 'Parent' : 'Student'} Dashboard</p>
+          <div className="flex items-center justify-between px-4 md:px-8 py-4">
+            <div className="flex items-center gap-3">
+              {isMobile && (
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-600"
+                >
+                  <Menu size={20} />
+                </button>
+              )}
+              <div>
+                <p className="text-[#001F54] font-bold text-base md:text-lg">{NAV.find(n => n.id === activePanel)?.label}</p>
+                <p className="text-slate-400 text-xs hidden sm:block">{SCHOOL_NAME} — {isParent ? 'Parent' : 'Student'} Dashboard</p>
+              </div>
             </div>
             <div className="flex items-center gap-2.5">
               {currentUser?.avatar ? (
@@ -393,7 +421,7 @@ export default function StudentDashboard() {
           </div>
         </header>
 
-        <div className="p-8 flex-1">
+        <div className="p-4 md:p-8 flex-1">
           <AnimatePresence mode="wait">
             <motion.div key={activePanel} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
               

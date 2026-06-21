@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   FileText, BarChart2, User, LogOut, ChevronLeft, ChevronRight,
-  Loader2, CheckCircle, Save, BookOpen, GraduationCap, Users, AlertCircle, LayoutDashboard, Lock
+  Loader2, CheckCircle, Save, BookOpen, GraduationCap, Users, AlertCircle, LayoutDashboard, Lock, Menu, X
 } from 'lucide-react';
 import { calculateGrade, calculateRemark } from '../utils/gradingEngine';
 
@@ -36,7 +36,8 @@ export default function TeacherDashboard() {
   const [selectedSession, setSelectedSession] = useState('2025/2026');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [activePanel, setActivePanel] = useState('overview');
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState(null); // null | 'pending' | 'approved'
@@ -86,6 +87,18 @@ export default function TeacherDashboard() {
       console.error("Failed to fetch teacher profile", err);
     }
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) setSidebarOpen(false);
+      else setSidebarOpen(true);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     fetchProfile();
@@ -294,15 +307,20 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-slate-50 flex">
 
-      {/* ── Sidebar ───────────────────────────────────── */}
+      {/* Mobile backdrop */}
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* ── Sidebar ─────────────────────────────────────────── */}
       <motion.aside
-        animate={{ width: sidebarOpen ? 240 : 68 }}
+        animate={{ width: isMobile ? (sidebarOpen ? 260 : 0) : (sidebarOpen ? 240 : 68) }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
         className="fixed left-0 top-0 h-full flex flex-col z-40 overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #001F54 0%, #003399 60%, #007BFF 100%)' }}
       >
         <div className="flex items-center px-4 py-5 border-b border-white/10 min-h-[72px]">
-          {!sidebarOpen ? (
+          {!sidebarOpen && !isMobile ? (
             <button onClick={() => setSidebarOpen(p => !p)} className="w-full flex items-center justify-center text-white/50 hover:text-white transition-colors">
               <ChevronRight size={18} />
             </button>
@@ -315,8 +333,8 @@ export default function TeacherDashboard() {
                 <p className="text-white font-black text-xs leading-tight">{SCHOOL_NAME}</p>
                 <p className="text-blue-300 text-[10px] tracking-widest">Teacher Portal</p>
               </div>
-              <button onClick={() => setSidebarOpen(p => !p)} className="text-white/50 hover:text-white transition-colors flex-shrink-0">
-                <ChevronLeft size={16} />
+              <button onClick={() => setSidebarOpen(false)} className="text-white/50 hover:text-white transition-colors flex-shrink-0">
+                {isMobile ? <X size={16} /> : <ChevronLeft size={16} />}
               </button>
             </div>
           )}
@@ -324,14 +342,14 @@ export default function TeacherDashboard() {
 
         <nav className="flex-1 py-4 px-2 space-y-0.5">
           {NAV.map(item => (
-            <button key={item.id} onClick={() => setActivePanel(item.id)} title={!sidebarOpen ? item.label : ''}
+            <button key={item.id} onClick={() => { setActivePanel(item.id); if (isMobile) setSidebarOpen(false); }} title={!sidebarOpen && !isMobile ? item.label : ''}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
                 activePanel === item.id
                   ? 'bg-white text-[#001F54] font-bold shadow-lg'
                   : 'text-blue-100 hover:bg-white/10 hover:text-white'
               }`}>
               <item.Icon size={18} className="flex-shrink-0" />
-              {sidebarOpen && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-semibold truncate">{item.label}</motion.span>}
+              {(sidebarOpen || isMobile) && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-semibold truncate">{item.label}</motion.span>}
             </button>
           ))}
         </nav>
@@ -345,13 +363,13 @@ export default function TeacherDashboard() {
                 {displayName[0]?.toUpperCase() || 'T'}
               </div>
             )}
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 min-w-0">
                 <p className="text-white font-semibold text-sm truncate">{displayName}</p>
                 <p className="text-blue-300 text-[10px]">Teacher</p>
               </motion.div>
             )}
-            {sidebarOpen && (
+            {(sidebarOpen || isMobile) && (
               <button onClick={handleLogout} className="text-blue-300 hover:text-red-400 transition-colors flex-shrink-0">
                 <LogOut size={15} />
               </button>
@@ -360,38 +378,50 @@ export default function TeacherDashboard() {
         </div>
       </motion.aside>
 
-      {/* ── Main ─────────────────────────────────────── */}
+      {/* ── Main ─────────────────────────────────────────── */}
       <motion.main
-        animate={{ marginLeft: sidebarOpen ? 240 : 68 }}
+        animate={{ marginLeft: isMobile ? 0 : (sidebarOpen ? 240 : 68) }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
         className="flex-1 min-h-screen"
       >
         <header className="sticky top-0 z-30 bg-white border-b border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between px-8 py-4">
-            <div>
-              <p className="text-[#001F54] font-bold text-lg">{NAV.find(n => n.id === activePanel)?.label}</p>
-              <p className="text-slate-400 text-xs">{SCHOOL_NAME} — Teacher Portal</p>
-            </div>
-            {saved && (
-              <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
-                <CheckCircle size={14} /> Scores saved successfully
-              </motion.div>
-            )}
-            <div className="flex items-center gap-2.5">
-              {currentUser?.avatar ? (
-                <img src={currentUser.avatar} className="w-8 h-8 rounded-xl object-cover" alt="Avatar" />
-              ) : (
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
-                  {displayName[0]?.toUpperCase() || 'T'}
-                </div>
+          <div className="flex items-center justify-between px-4 md:px-8 py-4">
+            <div className="flex items-center gap-3">
+              {isMobile && (
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-600"
+                >
+                  <Menu size={20} />
+                </button>
               )}
-              <span className="text-sm font-semibold text-slate-700 hidden sm:inline">{displayName}</span>
+              <div>
+                <p className="text-[#001F54] font-bold text-base md:text-lg">{NAV.find(n => n.id === activePanel)?.label}</p>
+                <p className="text-slate-400 text-xs hidden sm:block">{SCHOOL_NAME} — Teacher Portal</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {saved && (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                  className="hidden sm:flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-xl text-sm font-semibold">
+                  <CheckCircle size={14} /> Scores saved
+                </motion.div>
+              )}
+              <div className="flex items-center gap-2.5">
+                {currentUser?.avatar ? (
+                  <img src={currentUser.avatar} className="w-8 h-8 rounded-xl object-cover" alt="Avatar" />
+                ) : (
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
+                    {displayName[0]?.toUpperCase() || 'T'}
+                  </div>
+                )}
+                <span className="text-sm font-semibold text-slate-700 hidden sm:inline">{displayName}</span>
+              </div>
             </div>
           </div>
         </header>
 
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <AnimatePresence mode="wait">
             <motion.div key={activePanel} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
 
