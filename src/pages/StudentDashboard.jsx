@@ -223,6 +223,9 @@ export default function StudentDashboard() {
   const headers = { Authorization: `Bearer ${token}` };
   const isParent = user.role === 'Parent';
 
+  // For parents with multiple children
+  const [selectedChildID, setSelectedChildID] = useState(null);
+
   // Settings states
   const [adminEmail, setAdminEmail] = useState(user?.username || '');
   const [adminPassword, setAdminPassword] = useState('');
@@ -247,16 +250,30 @@ export default function StudentDashboard() {
     const loadResultsAndProfile = async () => {
       setLoading(true);
       try {
-        const endpoint = isParent ? `${API}/results/child` : `${API}/results/my`;
-        const [resultsRes, profileRes] = await Promise.all([
-          axios.get(endpoint, { headers }),
-          axios.get(`${API}/auth/profile`, { headers })
-        ]);
-        setResults(resultsRes.data.data || resultsRes.data || []);
+        const profileRes = await axios.get(`${API}/auth/profile`, { headers });
         setProfile(profileRes.data);
         if (profileRes.data?.username) {
           setAdminEmail(profileRes.data.username);
         }
+
+        // For parents: initialize selectedChildID from their children list
+        let childID = selectedChildID;
+        if (isParent && !childID) {
+          const children = profileRes.data?.children || [];
+          if (children.length > 0) {
+            childID = children[0].studentID;
+            setSelectedChildID(childID);
+          }
+        }
+
+        // Build endpoint
+        let endpoint = isParent ? `${API}/results/child` : `${API}/results/my`;
+        if (isParent && childID) {
+          endpoint = `${API}/results/child?studentID=${childID}`;
+        }
+
+        const resultsRes = await axios.get(endpoint, { headers });
+        setResults(resultsRes.data.data || resultsRes.data || []);
       } catch (err) {
         console.error("Error loading student portal data", err);
       }
@@ -264,6 +281,22 @@ export default function StudentDashboard() {
     };
     loadResultsAndProfile();
   }, []);
+
+  // Reload results when parent switches child
+  useEffect(() => {
+    if (!isParent || !selectedChildID) return;
+    const fetchChildResults = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${API}/results/child?studentID=${selectedChildID}`, { headers });
+        setResults(res.data.data || res.data || []);
+      } catch (err) {
+        console.error('Error loading child results', err);
+      }
+      setLoading(false);
+    };
+    fetchChildResults();
+  }, [selectedChildID]);
 
   const handleUpdateCredentials = async (e) => {
     e.preventDefault();
@@ -409,6 +442,22 @@ export default function StudentDashboard() {
                 <p className="text-[#001F54] font-bold text-base md:text-lg">{NAV.find(n => n.id === activePanel)?.label}</p>
                 <p className="text-slate-400 text-xs hidden sm:block">{SCHOOL_NAME} — {isParent ? 'Parent' : 'Student'} Dashboard</p>
               </div>
+              {/* Child selector for parents with multiple children */}
+              {isParent && profile?.children && profile.children.length > 1 && (
+                <div className="ml-3">
+                  <select
+                    value={selectedChildID || ''}
+                    onChange={e => setSelectedChildID(parseInt(e.target.value))}
+                    className="border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white font-semibold text-[#001F54]"
+                  >
+                    {profile.children.map(child => (
+                      <option key={child.studentID} value={child.studentID}>
+                        {child.name} ({child.class})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2.5">
               {currentUser?.avatar ? (
@@ -510,7 +559,9 @@ export default function StudentDashboard() {
                     </div>
                   ) : (
                     <ReportCard
-                      student={profile?.studentInfo}
+                      student={isParent
+                        ? (profile?.children?.find(c => c.studentID === selectedChildID) || profile?.children?.[0])
+                        : profile?.studentInfo}
                       results={filtered}
                       term={selectedTerm}
                       session="2025/2026"

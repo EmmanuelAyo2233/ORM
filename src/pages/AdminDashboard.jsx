@@ -226,6 +226,11 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
     { class: '', subjectID: '' }
   ]);
 
+  // Custom states for multi-child parent links (up to 5 children)
+  const EMPTY_CHILD_LINKS = [{ studentID: '' }, { studentID: '' }, { studentID: '' }, { studentID: '' }, { studentID: '' }];
+  const [parentChildLinks, setParentChildLinks] = useState(EMPTY_CHILD_LINKS);
+  const [editParentChildLinks, setEditParentChildLinks] = useState(EMPTY_CHILD_LINKS);
+
   const [students,     setStudents]     = useState([]);
   const [subjects,     setSubjects]     = useState([]);
   const [classes,      setClasses]      = useState([]);
@@ -274,6 +279,19 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
       const payload = { ...form, role };
       ['class','gender','DOB','studentID','subjectID'].forEach(k => { if (!payload[k]) delete payload[k]; });
       
+      // For Parent: pass studentIDs array from multi-slot links
+      if (role === 'Parent') {
+        const studentIDs = parentChildLinks
+          .map(l => parseInt(l.studentID))
+          .filter(Boolean);
+        if (studentIDs.length > 0) {
+          payload.studentIDs = studentIDs;
+          payload.studentID = studentIDs[0];
+        } else {
+          delete payload.studentID;
+        }
+      }
+      
       // Call create user
       const res = await axios.post(`${API}/users`, payload, { headers });
       
@@ -295,6 +313,7 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
       setShowModal(false);
       setForm({ name:'', email:'', password:'', class:'', gender:'', DOB:'', studentID:'', subjectID:'' });
       setTeacherAssignments([{ class: '', subjectID: '' }, { class: '', subjectID: '' }, { class: '', subjectID: '' }]);
+      setParentChildLinks(EMPTY_CHILD_LINKS);
       load();
       setTimeout(() => setSuccess(''), 4000);
     } catch (err) { setError(err.response?.data?.error || err.response?.data?.message || 'Failed to create account.'); }
@@ -354,6 +373,15 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
         })
         .catch(() => {});
     }
+
+    if (role === 'Parent') {
+      // Populate child slots from the user's studentIDs array
+      const existingIDs = Array.isArray(u.studentIDs) ? u.studentIDs : (u.studentID ? [u.studentID] : []);
+      const populated = [0,1,2,3,4].map(i => ({ studentID: existingIDs[i] ? String(existingIDs[i]) : '' }));
+      setEditParentChildLinks(populated);
+    } else {
+      setEditParentChildLinks(EMPTY_CHILD_LINKS);
+    }
   };
 
   const handleUpdate = async e => {
@@ -373,6 +401,14 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
       }
       if (role === 'Teacher') {
         payload.assignments = editTeacherAssignments.filter(a => a.class && a.subjectID);
+      }
+      // For Parent: pass studentIDs array
+      if (role === 'Parent') {
+        const studentIDs = editParentChildLinks
+          .map(l => parseInt(l.studentID))
+          .filter(Boolean);
+        payload.studentIDs = studentIDs;
+        payload.studentID = studentIDs[0] || null;
       }
       
       await axios.put(`${API}/users/${editingUser.userID || editingUser.id}`, payload, { headers });
@@ -399,7 +435,9 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
             <th className="text-left px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Assigned Subjects</th>
           </>
         )}
-        {role === 'Parent' && <th className="text-left px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Linked Student</th>}
+        {role === 'Parent' && (
+          <th className="text-left px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Linked Children</th>
+        )}
         <th className="text-left px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Date Added</th>
         <th className="text-right px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Actions</th>
       </tr>
@@ -435,9 +473,14 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
         
         {role === 'Parent' && (
           <td className="px-5 py-3.5 text-sm text-slate-500 whitespace-nowrap">
-            {u.studentID ? (
-              students.find(s => s.studentID === u.studentID)?.name || `ID: ${u.studentID}`
-            ) : '—'}
+            {(() => {
+              const ids = Array.isArray(u.studentIDs) && u.studentIDs.length > 0 ? u.studentIDs : (u.studentID ? [u.studentID] : []);
+              if (ids.length === 0) return '—';
+              return ids.map(sid => {
+                const s = students.find(st => st.studentID === sid || st.studentID === Number(sid));
+                return s ? `${s.name} (${s.class})` : `ID: ${sid}`;
+              }).join(', ');
+            })()}
           </td>
         )}
         
@@ -642,15 +685,28 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                 )}
 
                 {role === 'Parent' && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Link Student</label>
-                    <select value={form.studentID} onChange={e => setForm(p => ({ ...p, studentID: e.target.value }))}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white">
-                      <option value="">Select Child / Student (Optional)</option>
-                      {students.map(s => (
-                        <option key={s.studentID} value={s.studentID}>{s.name} ({s.class})</option>
-                      ))}
-                    </select>
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Link Children (Up to 5)</label>
+                    {parentChildLinks.map((link, index) => (
+                      <div key={index} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span className="text-xs font-bold text-slate-400 w-16 flex-shrink-0">Child {index + 1}</span>
+                        <select
+                          value={link.studentID}
+                          onChange={e => {
+                            const updated = [...parentChildLinks];
+                            updated[index].studentID = e.target.value;
+                            setParentChildLinks(updated);
+                          }}
+                          required={index === 0}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
+                        >
+                          <option value="">Select Child / Student{index === 0 ? ' (Required)' : ' (Optional)'}</option>
+                          {students.map(s => (
+                            <option key={s.studentID} value={s.studentID}>{s.name} ({s.class})</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
                   </div>
                 )}
 
@@ -785,15 +841,28 @@ function UserTablePanel({ role, Icon: RoleIcon, endpoint }) {
                 )}
 
                 {role === 'Parent' && (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Link Student</label>
-                    <select value={editForm.studentID} onChange={e => setEditForm(p => ({ ...p, studentID: e.target.value }))}
-                      className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white">
-                      <option value="">Select Child / Student (Optional)</option>
-                      {students.map(s => (
-                        <option key={s.studentID} value={s.studentID}>{s.name} ({s.class})</option>
-                      ))}
-                    </select>
+                  <div className="space-y-3">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Linked Children (Up to 5)</label>
+                    {editParentChildLinks.map((link, index) => (
+                      <div key={index} className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <span className="text-xs font-bold text-slate-400 w-16 flex-shrink-0">Child {index + 1}</span>
+                        <select
+                          value={link.studentID}
+                          onChange={e => {
+                            const updated = [...editParentChildLinks];
+                            updated[index].studentID = e.target.value;
+                            setEditParentChildLinks(updated);
+                          }}
+                          required={index === 0}
+                          className="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#007BFF] bg-white"
+                        >
+                          <option value="">Select Child / Student{index === 0 ? ' (Required)' : ' (Optional)'}</option>
+                          {students.map(s => (
+                            <option key={s.studentID} value={s.studentID}>{s.name} ({s.class})</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
                   </div>
                 )}
 

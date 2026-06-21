@@ -163,17 +163,12 @@ export default function TeacherDashboard() {
         const data = res.data.data || res.data || [];
         setStudents(data);
         
-        // Check approval status based on existing results
-        if (data.length > 0 && data[0].grade) {
-          // If results exist, check if any are approved
-          const hasApproved = data.some(s => s.status === 'approved');
-          const hasPending = data.some(s => s.status === 'pending' && s.grade);
-          if (hasApproved) setApprovalStatus('approved');
-          else if (hasPending) setApprovalStatus('pending');
-          else setApprovalStatus(null);
-        } else {
-          setApprovalStatus(null);
-        }
+        // Check approval status based on existing results — scan all students
+        const hasApproved = data.some(s => s.status === 'approved');
+        const hasPending = data.some(s => s.status === 'pending' && s.grade);
+        if (hasApproved) setApprovalStatus('approved');
+        else if (hasPending) setApprovalStatus('pending');
+        else setApprovalStatus(null);
         
         const initialScores = {};
         data.forEach(s => {
@@ -592,14 +587,24 @@ export default function TeacherDashboard() {
                                       <input type="number" min="0" max="40" placeholder="0–40"
                                         value={sc.ca_score || ''}
                                         onChange={e => handleScoreChange(s.studentID, 'ca_score', e.target.value)}
-                                        className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent"
+                                        disabled={approvalStatus === 'approved'}
+                                        className={`w-20 border rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent transition-all ${
+                                          approvalStatus === 'approved'
+                                            ? 'border-amber-200 bg-amber-50 text-amber-700 cursor-not-allowed opacity-80'
+                                            : 'border-slate-200'
+                                        }`}
                                       />
                                     </td>
                                     <td className="px-5 py-3.5 whitespace-nowrap">
                                       <input type="number" min="0" max="60" placeholder="0–60"
                                         value={sc.exam_score || ''}
                                         onChange={e => handleScoreChange(s.studentID, 'exam_score', e.target.value)}
-                                        className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent"
+                                        disabled={approvalStatus === 'approved'}
+                                        className={`w-20 border rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#007BFF] focus:border-transparent transition-all ${
+                                          approvalStatus === 'approved'
+                                            ? 'border-amber-200 bg-amber-50 text-amber-700 cursor-not-allowed opacity-80'
+                                            : 'border-slate-200'
+                                        }`}
                                       />
                                     </td>
                                     <td className="px-5 py-3.5 font-black text-[#001F54] text-base whitespace-nowrap">{sc.total ?? '—'}</td>
@@ -613,7 +618,12 @@ export default function TeacherDashboard() {
                                       <input type="text" placeholder="Add remark"
                                         value={sc.remark || ''}
                                         onChange={e => handleScoreChange(s.studentID, 'remark', e.target.value)}
-                                        className="w-full min-w-[160px] max-w-[240px] border border-slate-200 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF]"
+                                        disabled={approvalStatus === 'approved'}
+                                        className={`w-full min-w-[160px] max-w-[240px] border rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#007BFF] ${
+                                          approvalStatus === 'approved'
+                                            ? 'border-amber-200 bg-amber-50 text-amber-700 cursor-not-allowed opacity-80'
+                                            : 'border-slate-200'
+                                        }`}
                                       />
                                     </td>
                                   </tr>
